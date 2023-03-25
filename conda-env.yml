@@ -1,4 +1,4 @@
-name: ppic-test
+name: ppic
 channels:
   - defaults
 dependencies:
@@ -8,3 +8,4 @@ dependencies:
   - pip=23.0.1
   - pip:
       - colorcet==3.0.1
+      - scikit-image==0.20.0 
