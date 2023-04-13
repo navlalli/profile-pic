@@ -3,24 +3,36 @@
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
-import colorcet
-
-from skimage.draw import disk
+import matplotlib as mpl
+import colorcet as cc
+import skimage.draw as draw 
+import PIL 
 
 def plot_ppic(ppic, save_name="", save=0):
     """ Plot profile picture """
-    # Plot for saving
-    fig, ax = plt.subplots(constrained_layout=True)
-    p = ax.imshow(ppic, cmap='cet_bmw', vmax=1.3)
-    ax.invert_yaxis()
-    ax.set_aspect('equal')
-    if not save:
-        fig.colorbar(p, ax=ax)
-    if save:
-        ax.set_xticks([])
-        ax.set_yticks([])
-        fig.savefig(f"./img/{save_name}.png", dpi=200)
-    plt.show()
+    # If 2d array (scalar values)
+    if ppic.ndim == 2:
+        fig, ax = plt.subplots(constrained_layout=True)
+        p = ax.imshow(ppic, cmap='cet_bmw', vmax=1.3)
+        ax.invert_yaxis()
+        ax.set_aspect('equal')
+        if not save:
+            fig.colorbar(p, ax=ax)
+        if save:
+            ax.set_xticks([])
+            ax.set_yticks([])
+            fig.savefig(f"./img/{save_name}.png", dpi=200)
+        plt.show()
+    # If 3d array (RGB values)
+    elif ppic.ndim == 3:
+        fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
+        ax.imshow(ppic)
+        ax.set_aspect('equal')
+        if save:
+            ax.set_xticks([])
+            ax.set_yticks([])
+            fig.savefig(f"./img/{save_name}.png", dpi=200)
+        plt.show()
 
 
 def create_background(save=0):
@@ -56,6 +68,56 @@ def create_background(save=0):
 
     return background
 
+def color_creator(cmap_name, N, min=0, max=1, invert=0):
+    """ Creates a list of N colors from the colormap cmap """
+    cmap = mpl.cm.get_cmap(cmap_name)
+    # Part through the colormap, specify min and max to crop colormap
+    if invert:
+        pa = np.linspace(max, min , N)
+    else:
+        pa = np.linspace(min, max , N)
+    # Creates list of colors from the colormap
+    cols = np.zeros((N, 4))
+    for i in range(N):
+        cols[i] = cmap(pa[i])
+    return cols
+
+def add_colored_line(ppic):
+    """ Add colored line with colors based on a colormap """
+    # Save to jpg so can reopen as an array with three channel color data
+    fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
+    p = ax.imshow(ppic, cmap='cet_bmw', vmax=1.3)
+    ax.invert_yaxis()
+    ax.set_aspect('equal')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    # fig.savefig("./img/background.jpeg", dpi=200)
+    # plt.show()
+
+    # Open jpg as three channel colour data 
+    three = np.array(PIL.Image.open("./img/background.jpeg"))
+    np.testing.assert_equal(np.shape(ppic), np.shape(three)[:-1])
+    # Get coordinates of line 
+
+    rr, cc = draw.line(150, 850, 850, 150)  
+    rr1, cc1 = draw.line(150+1, 850, 850+1, 150)  
+    rr2, cc2 = draw.line(150+2, 850, 850+2, 150)  
+    # rr, cc = draw.rectangle((500, 500), (120, 120))  
+    print(f"{np.shape(rr) = }")
+    print(f"{np.shape(cc) = }")
+    cols = color_creator("cet_rainbow", len(rr))
+    for i in range(len(rr)):
+        draw.set_color(three, (rr[i], cc[i]), cols[i,:-1]*255)
+        draw.set_color(three, (rr1[i], cc1[i]), cols[i][:-1]*255)
+        draw.set_color(three, (rr2[i], cc2[i]), cols[i][:-1]*255)
+
+    plot_ppic(three, save_name="ppic_multiline_13_4_23", save=1)
+    
+
+
+
+
+
 def add_noise(ppic):
     """ Add noise """
     np.random.seed(8)
@@ -71,7 +133,7 @@ def add_noise(ppic):
     
 def add_moon(ppic):
     """ Add moon-like object """
-    rr, cc = disk((730, 730), 40, shape=(N, N))
+    rr, cc = draw.disk((730, 730), 40, shape=(N, N))
     ppic[rr, cc] = 1.22
     smoothed_ppic = scipy.ndimage.gaussian_filter(ppic, sigma=3, mode='nearest')
     plot_ppic(smoothed_ppic, save_name="ppic_moon_25_3_23", save=0)
@@ -112,8 +174,15 @@ if __name__ == "__main__":
     # ysq = 1.2 * y **2 - 0.2 * y + 1
     # background[:, y] = ysq
     # print(f"{background = }")
+
+
+    # With moon
+    # ppic = create_background(save=0)
+    # add_moon(ppic)
+
+    # With colored line
     ppic = create_background(save=0)
-    add_moon(ppic)
+    add_colored_line(ppic)
     # plot_ppic(ppic)
     # add_noise(ppic)
     # log_spiral()
