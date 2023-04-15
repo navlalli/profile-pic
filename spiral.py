@@ -36,7 +36,7 @@ def plot_ppic(ppic, save_name="", save=0):
 
 
 def create_background(save=0):
-    """ Create background for profile pic """
+    """ Create background for profile pic - simple gradient in color """
     background = np.zeros((N, N))
     height = np.linspace(0, 1, N)
     bg_val = 5 * height ** 2 + height
@@ -63,10 +63,44 @@ def create_background(save=0):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_aspect('equal')
-        fig.savefig("./img/18_3_23.png", dpi=200)
+        fig.savefig("./img/15_4_23.png", dpi=200)
     plt.show()
 
     return background
+
+def create_background_spiral(ppic, save=0):
+    """ Create background with a spiral plotted """
+    a = 0
+    b = 10
+    theta = np.linspace(0, 12*np.pi, 1000)
+    r = a + b * theta
+    x = 500 + r * np.cos(theta)
+    y = 500 + r * np.sin(theta)
+    print(f"{np.rint(x).astype(int) = }")
+    print(f"{np.rint(y).astype(int) = }")
+    # xint = np.rint(x).astype(int)
+    # yint = np.rint(y).astype(int)
+    # background[yint, xint] = 1.3
+    
+    # fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
+    # p = ax.imshow(ppic, cmap='cet_bmw', vmax=1.3)
+    # ax.invert_yaxis()
+    # ax.set_aspect('equal')
+    # # fig.colorbar(p, ax=ax)
+    # ax.plot(x, y, 'w-', lw=3)
+    # ax.set_xticks([])
+    # ax.set_yticks([])
+    # # fig.savefig("./img/background_spiral.jpeg", dpi=200)
+    # plt.show()
+
+    three = np.array(PIL.Image.open("./img/background_spiral.jpeg"))
+    np.testing.assert_equal(np.shape(ppic), np.shape(three)[:-1])
+    print(f"{three = }")
+    plot_ppic(three, save_name="ppic_spiral_15_4_23", save=1)
+    
+
+
+
 
 def color_creator(cmap_name, N, min=0, max=1, invert=0):
     """ Creates a list of N colors from the colormap cmap """
@@ -111,10 +145,25 @@ def add_colored_line(ppic):
         draw.set_color(three, (rr1[i], cc1[i]), cols[i][:-1]*255)
         draw.set_color(three, (rr2[i], cc2[i]), cols[i][:-1]*255)
 
-    plot_ppic(three, save_name="ppic_multiline_13_4_23", save=1)
+    # plot_ppic(three, save_name="ppic_multiline_13_4_23", save=0)
     
 
-
+def plot_spiral():
+    """ Plot logarithmic spiral """
+    # a = 10
+    # k = 0.5
+    a = 0
+    b = 8
+    theta = np.linspace(0, 10*np.pi, 1000)
+    r = a + b * theta
+    x = 500 + r * np.cos(theta)
+    y = 500 + r * np.sin(theta)
+    # phi = np.linspace(0, 2*np.pi, 100)
+    # x = a * np.exp(k * phi) * np.cos(phi)
+    # y = a * np.exp(k * phi) * np.sin(phi)
+    fig, ax = plt.subplots(constrained_layout=True)
+    ax.plot(x, y, 'k-', lw=5)
+    plt.show()
 
 
 
@@ -175,14 +224,22 @@ if __name__ == "__main__":
     # background[:, y] = ysq
     # print(f"{background = }")
 
-
     # With moon
     # ppic = create_background(save=0)
     # add_moon(ppic)
 
     # With colored line
+    # ppic = create_background(save=0)
+    # add_colored_line(ppic)
+    
+    # Plot spiral
+    # plot_spiral()
+
+    # With Archimedean spiral
     ppic = create_background(save=0)
-    add_colored_line(ppic)
+    create_background_spiral(ppic)
+
+
     # plot_ppic(ppic)
     # add_noise(ppic)
     # log_spiral()
