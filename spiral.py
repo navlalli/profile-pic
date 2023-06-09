@@ -82,31 +82,62 @@ def create_background_spiral(ppic, save=0):
     # yint = np.rint(y).astype(int)
     # background[yint, xint] = 1.3
     
-    # fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
-    # p = ax.imshow(ppic, cmap='cet_bmw', vmax=1.3)
-    # ax.invert_yaxis()
-    # ax.set_aspect('equal')
-    # # fig.colorbar(p, ax=ax)
-    # ax.plot(x, y, 'w-', lw=3)
-    # ax.set_xticks([])
-    # ax.set_yticks([])
-    # # fig.savefig("./img/background_spiral.jpeg", dpi=200)
-    # plt.show()
+    fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
+    p = ax.imshow(ppic, cmap='cet_bmw', vmax=1.3)
+    ax.invert_yaxis()
+    ax.set_aspect('equal')
+    # fig.colorbar(p, ax=ax)
+    ax.plot(x, y, 'w-', lw=3)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    # fig.savefig("./img/background_spiral.jpeg", dpi=200)
+    plt.show()
 
     three = np.array(PIL.Image.open("./img/background_spiral.jpeg"))
     np.testing.assert_equal(np.shape(ppic), np.shape(three)[:-1])
-    print(f"{three = }")
-    plot_ppic(three, save_name="ppic_spiral_15_4_23", save=1)
+    # print(f"{three = }")
+    plot_ppic(three, save_name="ppic_spiral_15_4_23", save=0)
+    # Filter out white pixels (the ellipse)
+    tol = 200 
+    mask = np.all(three > [tol, tol, tol], axis=-1)
+    # print(f"{mask = }")
+    print(f"{np.shape(mask) = }")
+    print(f"{np.count_nonzero(mask) = }")
+    three[mask] = [50, 0, 180]
+    plot_ppic(three)
     
 
+def add_pattern(ppic, save=0):
+    """ Add pattern from simulation """
+    print(f"{np.shape(ppic) = }")
+    pattern = np.loadtxt("pattern.txt")
+    scale = 200 / np.max(pattern)
+    y_translate = 500
+    pattern_scaled = pattern * scale + y_translate
+    ny, nx = np.shape(pattern)
+    cols = color_creator("cet_kbc", ny, reverse=1)
+    fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
+    p = ax.imshow(ppic, cmap="cet_kbc", vmax=1.3)
+    ax.invert_yaxis()
+    ax.set_aspect('equal')
+    squeeze = 70
+    x = np.linspace(0+squeeze, 999-squeeze, nx)
+    ax.plot([0, squeeze], [y_translate, y_translate], 'k-', lw=3)
+    ax.plot([999-squeeze, 999], [y_translate, y_translate], 'k-', lw=3)
+    for i in range(ny):
+        ax.plot(x, pattern_scaled[i, :], '-', color=cols[i], lw=3)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    if save:
+        fig.savefig("./img/ppic_pattern_9_6_23.jpeg", dpi=200)
+    plt.show()
 
 
-
-def color_creator(cmap_name, N, min=0, max=1, invert=0):
+def color_creator(cmap_name, N, min=0, max=1, reverse=0):
     """ Creates a list of N colors from the colormap cmap """
-    cmap = mpl.cm.get_cmap(cmap_name)
+    cmap = mpl.colormaps.get_cmap(cmap_name)
     # Part through the colormap, specify min and max to crop colormap
-    if invert:
+    if reverse:
         pa = np.linspace(max, min , N)
     else:
         pa = np.linspace(min, max , N)
@@ -236,8 +267,12 @@ if __name__ == "__main__":
     # plot_spiral()
 
     # With Archimedean spiral
+    # ppic = create_background(save=0)
+    # create_background_spiral(ppic)
+
+    # With pattern from simulation
     ppic = create_background(save=0)
-    create_background_spiral(ppic)
+    add_pattern(ppic, save=0)
 
 
     # plot_ppic(ppic)
