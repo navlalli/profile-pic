@@ -16,3 +16,5 @@ conda env create -f conda-env.yml
 |![Third profile pic](./img/ppic_multiline_13_4_23.png) |
 | Date: 15/4/23 |
 |![Fourth profile pic](./img/ppic_spiral_15_4_23.png) |
+| Date: 9/6/23 |
+|![Fifth profile pic](./img/ppic_pattern_9_6_23.jpeg) |
